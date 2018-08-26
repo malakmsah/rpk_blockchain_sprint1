@@ -4,6 +4,7 @@ const secp256k1 = require('secp256k1');
 const { randomBytes, createHash } = require('crypto');
 
 
+
 /**
  * A function which generates a new random Secp256k1 private key, returning
  * it as a 64 character hexadecimal string.
@@ -15,6 +16,12 @@ const { randomBytes, createHash } = require('crypto');
  */
 const createPrivateKey = () => {
   // Enter your solution here
+    let privKey;
+    do {
+        privKey = randomBytes(32);
+
+    } while (!secp256k1.privateKeyVerify(privKey))
+    return  privKey.toString('hex');
 
 };
 
@@ -31,10 +38,14 @@ const createPrivateKey = () => {
  *   Remember that the secp256k1-node library expects raw bytes (i.e Buffers),
  *   not hex strings! You'll have to convert the private key.
  */
-const getPublicKey = privateKey => {
+const getPublicKey = (privateKey) => {
   // Your code here
+    const buf = Buffer.from(privateKey, 'hex');
+    return secp256k1.publicKeyCreate(buf).toString('hex');
 
 };
+
+
 
 /**
  * A function which takes a hex private key and a string message, returning
@@ -52,6 +63,12 @@ const getPublicKey = privateKey => {
 const sign = (privateKey, message) => {
   // Your code here
 
+    var hash = createHash('sha256').update(message).digest();
+    const buf = Buffer.from(privateKey, 'hex');
+
+    let signature = secp256k1.sign(hash, buf);
+    return signature.signature.toString("hex");
+
 };
 
 /**
@@ -66,7 +83,11 @@ const sign = (privateKey, message) => {
  */
 const verify = (publicKey, message, signature) => {
   // Your code here
+    var hash = createHash('sha256').update(message).digest();
+    const buf = Buffer.from(signature, 'hex');
+    const buf2 = Buffer.from(publicKey, 'hex');
 
+    return secp256k1.verify(hash, buf, buf2);
 };
 
 module.exports = {

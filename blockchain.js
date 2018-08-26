@@ -23,7 +23,10 @@ class Transaction {
    */
   constructor(privateKey, recipient, amount) {
     // Enter your solution here
-
+       this.source = signing.getPublicKey(privateKey);
+       this.recipient = recipient;
+       this.amount = amount;
+       this.signature = signing.sign(privateKey, this.source + this.recipient + this.amount);
   }
 }
 
@@ -44,8 +47,12 @@ class Block {
    *   - hash: a unique hash string generated from the other properties
    */
   constructor(transactions, previousHash) {
-    // Your code here
 
+    // Your code here
+      this.transactions = transactions;
+      this.previousHash = previousHash;
+      this.nonce = 0;
+      this.calculateHash(this.nonce)
   }
 
   /**
@@ -58,8 +65,17 @@ class Block {
    *   properties change.
    */
   calculateHash(nonce) {
-    // Your code here
-
+      this.nonce = nonce;
+      let hash = nonce.toString();
+      if(this.previousHash != null)
+      {
+          hash += this.previousHash.toString();
+      }
+      if(this.transactions.length > 0)
+      {
+          hash += JSON.stringify(this.transactions);
+      }
+      return this.hash = createHash('sha256').update(hash).digest('hex');
   }
 }
 
@@ -79,7 +95,7 @@ class Blockchain {
    */
   constructor() {
     // Your code here
-
+    this.blocks = [new Block([], null)];
   }
 
   /**
@@ -87,6 +103,7 @@ class Blockchain {
    */
   getHeadBlock() {
     // Your code here
+      return this.blocks[this.blocks.length -1]
 
   }
 
@@ -95,8 +112,10 @@ class Blockchain {
    * adding it to the chain.
    */
   addBlock(transactions) {
-    // Your code here
-
+      // Your code here
+    let lastHash = this.getHeadBlock().hash;
+    let newBlock = new Block(transactions, lastHash);
+    this.blocks.push(newBlock);
   }
 
   /**
@@ -110,7 +129,20 @@ class Blockchain {
    */
   getBalance(publicKey) {
     // Your code here
-
+      let balance = 0;
+      this.blocks.forEach(function (block) {
+          if(block.transactions.length > 0) {
+              block.transactions.forEach(function (transaction) {
+                  if (transaction.recipient === publicKey) {
+                      balance = balance + transaction.amount;
+                  }
+                  if (transaction.source === publicKey) {
+                      balance = balance - transaction.amount;
+                  }
+              })
+          }
+      });
+      return balance;
   }
 }
 

@@ -7,12 +7,19 @@ const signing = require('./signing');
  * A simple validation function for transactions. Accepts a transaction
  * and returns true or false. It should reject transactions that:
  *   - have negative amounts
- *   - were improperly signed
- *   - have been modified since signing
+ *   - were improperly signed // using the verify function : source, message, signature
+ *   - have been modified since signing // consider message as data
  */
 const isValidTransaction = transaction => {
-  // Enter your solution here
-
+  if(transaction.amount < 0)
+  {
+    return false;
+  }
+  return signing.verify(
+      transaction.source,
+      transaction.source + transaction.recipient + transaction.amount,
+      transaction.signature
+  );
 };
 
 /**
